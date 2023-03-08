@@ -17,35 +17,33 @@ import kotlin.coroutines.suspendCoroutine
 
 
 
-    class CallReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            val telephonyManager = context?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+class CallReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if(intent?.action == TelephonyManager.ACTION_PHONE_STATE_CHANGED){
+            val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
+            if(state == TelephonyManager.EXTRA_STATE_RINGING) {
 
-            if(intent?.action == TelephonyManager.ACTION_PHONE_STATE_CHANGED){
-                val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
-                if(state == TelephonyManager.EXTRA_STATE_RINGING) {
+                val incomingNumber = intent?.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
 
-                    val incomingNumber = intent?.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
+                val prefs = context?.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                val numberToReply = prefs?.getString("numberToReply", "")
+                val message = prefs?.getString("message", "")
 
-                    val prefs = context?.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                    val numberToReply = prefs?.getString("numberToReply", "")
-                    val message = prefs?.getString("message", "")
+                Log.d("Incoming number: ",incomingNumber.toString())
+                Log.d("NUmber to reply: ",("+52"+numberToReply.toString()))
 
-                    Log.d("prueba1",incomingNumber.toString())
-                    Log.d("prueba2",("+52"+numberToReply.toString()))
+                if(numberToReply!= null && message!=null && incomingNumber.toString()==("+52"+numberToReply.toString())){
+                    try {
+                        val smsManager = SmsManager.getDefault()
+                        smsManager.sendTextMessage("+52"+numberToReply, null, message, null, null)
 
-                    if(numberToReply!= null && message!=null && incomingNumber.toString()==("+52"+numberToReply.toString())){
-                        try {
-                            val smsManager = SmsManager.getDefault()
-                            smsManager.sendTextMessage("+52"+numberToReply, null, message, null, null)
-
-                        } catch (e: Exception) {
-                            Log.e("CallReceiver", "Error sending SMS", e)
-                        }
+                    } catch (e: Exception) {
+                        Log.e("CallReceiver", "Error sending SMS", e)
                     }
                 }
             }
         }
     }
+}
 
 
