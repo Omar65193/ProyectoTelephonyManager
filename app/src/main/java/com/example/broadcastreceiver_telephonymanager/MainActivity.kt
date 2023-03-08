@@ -36,6 +36,13 @@ class MainActivity : AppCompatActivity() {
             changeMessageAndNumber()
         }
 
+        val prefs = this.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val numberToReply = prefs?.getString("numberToReply", "")
+        val message = prefs?.getString("message", "")
+        binding.txtNumber.setText(numberToReply)
+        binding.txtMessage.setText(message)
+
+
         stateSwitch = isMyServiceRunning(ServiceTelephony::class.java)
         binding.isServiceActivedSwitch.isChecked = stateSwitch
         binding.isServiceActivedSwitch.setOnClickListener { view: View? ->
